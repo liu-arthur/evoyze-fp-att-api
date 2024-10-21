@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geolocation Logger</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        #overlay {
+            display: none; /* Hidden by default */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5); /* Black with transparency */
+            z-index: 999; /* On top of other content */
+            text-align: center;
+            padding-top: 20%;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="mb-4">Geolocation Logger</h1>
+
+        <!-- Input for target location -->
+        <div class="form-group">
+            <label for="inputLatitude">Target Latitude:</label>
+            <input type="number" step="any" class="form-control" id="inputLatitude" placeholder="Enter target latitude">
+        </div>
+        <div class="form-group">
+            <label for="inputLongitude">Target Longitude:</label>
+            <input type="number" step="any" class="form-control" id="inputLongitude" placeholder="Enter target longitude">
+        </div>
+
+        <button class="btn btn-primary" onclick="getLocation()">
+            Get Location
+        </button>
+        <p id="location" class="mt-3"></p>
+    </div>
+
+    <!-- Overlay with spinner -->
+    <div class="justify-content-center overlay" id="overlay">
+        <div class="spinner-border" role="status">
+            <span class="sr-only">Loading...</span>
+        </div>
+    </div>
+
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <script>
+        let targetLocation = {
+            latitude: '',
+            longitude: ''
+        };
+        
+        const distanceThreshold = 100; // Distance threshold in meters
+
+        function showSpinner() {
+            document.getElementById('overlay').style.display = 'flex';
+        }
+
+        function hideSpinner() {
+            document.getElementById('overlay').style.display = 'none';
+        }
+
+        function getLocation() {
+            // Get user-defined target location
+            const inputLatitude = parseFloat(document.getElementById('inputLatitude').value);
+            const inputLongitude = parseFloat(document.getElementById('inputLongitude').value);
+            
+            if (!isNaN(inputLatitude) && !isNaN(inputLongitude)) {
+                targetLocation.latitude = inputLatitude;
+                targetLocation.longitude = inputLongitude;
+            } else {
+                document.getElementById("location").innerText = "Please enter valid latitude and longitude values.";
+                return;
+            }
+
+            showSpinner();
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(showPosition, showError);
+            } else {
+                document.getElementById("location").innerText = "Geolocation is not supported by this browser.";
+                hideSpinner();
+            }
+        }
+
+        function showPosition(position) {
+            const latitude = position.coords.latitude;
+            const longitude = position.coords.longitude;
+
+            const formattedLatitude = formatDMS(latitude, true);
+            const formattedLongitude = formatDMS(longitude, false);
+
+            const distance = calculateDistance(
+                latitude, longitude, 
+                targetLocation.latitude, targetLocation.longitude
+            );
+
+            const isWithinThreshold = distance <= distanceThreshold;
+            const status = isWithinThreshold ? `within ${distanceThreshold} meters of the target location.` : `outside of ${distanceThreshold} meters of the target location.`;
+
+            document.getElementById("location").innerText = `
+                Current Location: ${formattedLatitude}, ${formattedLongitude}
+                \nDistance to target location: ${distance.toFixed(2)} meters
+                \nYou are ${status}
+            `;
+            console.log(`
+                Current Location: ${formattedLatitude}, ${formattedLongitude}
+                \nDistance to target location: ${distance.toFixed(2)} meters
+                \nYou are ${status}
+            `);
+
+            hideSpinner();
+        }
+
+        function showError(error) {
+            let message = '';
+            switch (error.code) {
+                case error.PERMISSION_DENIED:
+                    message = "You have denied the request for Geolocation. Please enable location services in your browser settings to use this feature.";
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    message = "Location information is unavailable. Please try again later.";
+                    break;
+                case error.TIMEOUT:
+                    message = "The request to get your location timed out. Please try again.";
+                    break;
+                case error.UNKNOWN_ERROR:
+                    message = "An unknown error occurred. Please try again.";
+                    break;
+            }
+            document.getElementById("location").innerText = message;
+            hideSpinner();
+        }
+
+        function toDMS(degrees) {
+            const absDegrees = Math.abs(degrees);
+            const d = Math.floor(absDegrees);
+            const minFloat = (absDegrees - d) * 60;
+            const m = Math.floor(minFloat);
+            const s = (minFloat - m) * 60;
+
+            return {
+                degrees: d,
+                minutes: m,
+                seconds: s.toFixed(1)
+            };
+        }
+
+        function formatDMS(degrees, isLatitude) {
+            const dms = toDMS(degrees);
+            const direction = isLatitude 
+                ? (degrees >= 0 ? 'N' : 'S')
+                : (degrees >= 0 ? 'E' : 'W');
+
+            return `${dms.degrees}°${dms.minutes}'${dms.seconds}"${direction}`;
+        }
+
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371e3; // Radius of the Earth in meters
+            const φ1 = lat1 * Math.PI / 180; // φ, λ in radians
+            const φ2 = lat2 * Math.PI / 180;
+            const Δφ = (lat2 - lat1) * Math.PI / 180;
+            const Δλ = (lon2 - lon1) * Math.PI / 180;
+
+            const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+                      Math.cos(φ1) * Math.cos(φ2) *
+                      Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+            return R * c; // Distance in meters
+        }
+    </script>
+</body>
+</html>
