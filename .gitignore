@@ -15,3 +15,6 @@ build/
 
 # Config
 config/
+
+# Management tools
+mgt/

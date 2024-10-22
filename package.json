@@ -3,27 +3,15 @@
 	"version": "24.8.3",
 	"description": "eVoyze FFD People Attendance API",
 	"main": "app.js",
+	"author": "eVoyze Sdn Bhd",
+	"license": "MIT",
+	"bin": {
+		"att-device-api": "./app/app.js"
+	},
 	"scripts": {
 		"start": "node ./app/app.js",
 		"dev": "nodemon ./app/app.js",
-		"build": "node ./tools/build.js"
-	},
-	"author": "eVoyze Sdn Bhd",
-	"license": "MIT",
-	"dependencies": {
-		"@node-minify/core": "^8.0.6",
-		"@node-minify/uglify-es": "^8.0.6",
-		"express": "^4.19.2",
-		"joi": "^17.13.3",
-		"moment": "^2.30.1",
-		"mssql": "^11.0.1",
-		"node-cron": "^3.0.3",
-		"uuid": "^10.0.0",
-		"winston": "^3.15.0",
-		"winston-daily-rotate-file": "^5.0.0"
-	},
-	"bin": {
-		"att-device-api": "./app/app.js"
+		"build": "node ./mgt/build.js"
 	},
 	"pkg": {
 		"scripts": [
@@ -37,5 +25,17 @@
 		"targets": [
 			"node18-win-x64"
 		]
+	},
+	"dependencies": {
+		"@node-minify/core": "^8.0.6",
+		"@node-minify/uglify-es": "^8.0.6",
+		"express": "^4.19.2",
+		"joi": "^17.13.3",
+		"moment": "^2.30.1",
+		"mssql": "^11.0.1",
+		"node-cron": "^3.0.3",
+		"uuid": "^10.0.0",
+		"winston": "^3.15.0",
+		"winston-daily-rotate-file": "^5.0.0"
 	}
 }

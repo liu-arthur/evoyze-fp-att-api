@@ -15,7 +15,7 @@ router.post("/", async (req, res) => {
 		const { error, value } = vDevice.validate(req.body);
 
 		if (error) {
-			logMessage("Attendance log - Error - Invalid request data.");
+			logMessage("Attendance device - Error - Invalid request data.");
 
 			return res.status(400).json({ error: "Invalid request data." });
 		}
@@ -37,10 +37,10 @@ router.post("/", async (req, res) => {
 		const result = await execSP("pr_att_dev_update_status", parameters);
 
 		if (result.output.result === "ok") {
-			logMessage("Attendance log - End");
-			res.status(200).json({ msg: "success" });
+			logMessage("Attendance device - End");
+			res.status(200).json({ msg: "ok" });
 		} else {
-			logMessage(`Attendance log - End - ${result.output.result}`);
+			logMessage(`Attendance device - End - ${result.output.result}`);
 			res.status(400).json({ msg: result.output.result });
 		}
 	} catch (err) {

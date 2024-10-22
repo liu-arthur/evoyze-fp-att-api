@@ -63,7 +63,7 @@ router.post("/", async (req, res) => {
 				`Attendance log - End with 'SUCCESS' == ${processedCount}`
 			);
 			res.status(200).json({
-				msg: `success`,
+				msg: "ok",
 				processedCount: processedCount,
 			});
 		}
